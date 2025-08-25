@@ -1,0 +1,24 @@
+# Exclude dev-only and non-runtime content from Docker build context
+
+# VCS and editor
+.git
+.github/
+.vscode/
+
+# Python virtual envs and local env/data
+backend/.venv/
+backend/.env
+backend/.data/
+
+# Node modules and local env
+frontend/node_modules/
+frontend/.env.local
+
+# Tests, specs, prompts, docs (kept in Git, not needed in images)
+specs/
+prompt/
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db
