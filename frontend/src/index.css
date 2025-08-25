@@ -1,0 +1,78 @@
+@import "tailwindcss";
+@import "./theme/tokens.css";
+@import "./theme/typography.css";
+
+/* Prevent document-level scroll chaining and page scroll */
+html, body, #root {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  overflow: hidden;
+}
+
+/* Tailwind v4 theme color mappings. This makes classes like bg-brand-blue and text-brand-navy available. */
+@theme {
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-sky: var(--brand-sky);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-navy-700: var(--brand-navy-700);
+  --color-brand-grey: var(--brand-grey);
+  --color-brand-bluegrey: var(--brand-bluegrey);
+  --color-brand-bluegrey-50: var(--brand-bluegrey-50);
+  --color-brand-copper: var(--brand-copper);
+  --color-brand-copper-300: var(--brand-copper-300);
+  --color-brand-copper-700: var(--brand-copper-700);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-subtle: var(--border-subtle);
+  --color-bg-canvas: var(--bg-canvas);
+  --color-bg-surface: var(--bg-surface);
+}
+
+@layer utilities {
+  .focus-ring:focus { outline: 3px solid var(--brand-sky); outline-offset: 2px; }
+}
+
+/* Auto-hide scrollbars: hidden by default, visible on hover or while scrolling */
+.auto-hide-scroll {
+  scrollbar-width: none; /* Firefox */
+}
+.auto-hide-scroll.scrolling {
+  scrollbar-width: thin; /* Firefox */
+}
+.auto-hide-scroll::-webkit-scrollbar { /* WebKit */
+  width: 0;
+  height: 0;
+}
+.auto-hide-scroll.scrolling::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.auto-hide-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--border-subtle);
+  border-radius: 8px;
+}
+.auto-hide-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Ghost scrollbar track: shows on active scroll even without overflow */
+.scrollbar-ghost {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  border-radius: 6px;
+  background: transparent;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+.auto-hide-scroll.scrolling > .scrollbar-ghost {
+  opacity: 1;
+  background: rgba(0,0,0,0.08);
+}

@@ -1,0 +1,53 @@
+:root{
+  /* Spec-defined FCE tokens */
+  --fce-blue:#24427E;
+  --fce-sky:#4099FF;
+  --fce-navy:#111E36;
+  --fce-grey:#A4AFBF;
+  --fce-bluegrey:#DDE8FD;
+  --fce-copper:#B87333;
+
+  /* Neutrals & supporting (spec) */
+  --fce-blue-600:#2E5C8C;
+  --fce-blue-700:#335473;
+  --fce-blue-800:#212E4D;
+  --fce-blue-900:#121C29;
+  --fce-neutral-500:#7D828C;
+  --fce-neutral-400:#61666E;
+  --fce-neutral-300:#D1D6DE;
+  --fce-neutral-100:#EDF5FF;
+  --fce-neutral-50:#F7FAFF;
+  --fce-accent-300:#A1CCFF;
+  --fce-accent-400:#5996E0;
+
+  /* Added refined variants */
+  --fce-navy-700:#0D1626;
+  --fce-bluegrey-50:#F3F6FF;
+  --fce-copper-300:#D9A679;
+  --fce-copper-700:#8A4F20;
+
+  /* Backward-compatible aliases used by Tailwind utilities (bg-brand-*, etc.) */
+  --brand-blue:var(--fce-blue);
+  --brand-sky:var(--fce-sky);
+  --brand-navy:var(--fce-navy);
+  --brand-navy-700:var(--fce-navy-700);
+  --brand-grey:var(--fce-grey);
+  --brand-bluegrey:var(--fce-bluegrey);
+  --brand-bluegrey-50:var(--fce-bluegrey-50);
+  --brand-copper:var(--fce-copper);
+  --brand-copper-300:var(--fce-copper-300);
+  --brand-copper-700:var(--fce-copper-700);
+
+  /* Legacy neutral aliases */
+  --neutral-500:var(--fce-neutral-500);
+  --neutral-400:var(--fce-neutral-400);
+  --neutral-300:var(--fce-neutral-300);
+  --neutral-100:var(--fce-neutral-100);
+
+  /* Semantic */
+  --bg-canvas:var(--fce-neutral-50);
+  --bg-surface:#fff;
+  --text-primary:var(--fce-blue-900);
+  --text-secondary:var(--fce-neutral-500);
+  --border-subtle:var(--fce-neutral-300);
+}
