@@ -1,18 +1,27 @@
 import { domainRegistry } from "./contracts";
 
-// Conditionally register domains here. Sample domain is gated by env flag.
-// Default: DISABLED unless explicitly enabled.
-const SAMPLE_ENABLED = String(import.meta.env.VITE_ENABLE_SAMPLE_DOMAIN || "").toLowerCase() === "true";
+// Register domains here.
 
-if (SAMPLE_ENABLED) {
-  import("../../domains/sample/domain").then(({ default: SampleDomain }) => {
-    try {
-      domainRegistry.register(SampleDomain);
-    } catch (e) {
-      if (import.meta.env.MODE !== "production") {
-        // eslint-disable-next-line no-console
-        console.warn("Sample domain registration failed:", e);
-      }
+import("../../domains/turnarounds/domain").then(({ default: TurnaroundsDomain }) => {
+  try {
+    domainRegistry.register(TurnaroundsDomain);
+  } catch (e) {
+    if (import.meta.env.MODE !== "production") {
+      // eslint-disable-next-line no-console
+      console.warn("Turnarounds domain registration failed:", e);
     }
-  });
-}
+  }
+});
+
+// Register the Home domain by default
+import("../../domains/home/domain").then(({ default: HomeDomain }) => {
+  try {
+    domainRegistry.register(HomeDomain);
+  } catch (e) {
+    if (import.meta.env.MODE !== "production") {
+      // eslint-disable-next-line no-console
+      console.warn("Home domain registration failed:", e);
+    }
+  }
+});
+

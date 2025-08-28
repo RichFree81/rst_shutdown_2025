@@ -9,8 +9,13 @@ export interface DomainIcon {
 
 export interface ExplorerItem {
   id: string;
-  label: string;
+  label: string | JSX.Element;
+  path?: string;
+  icon?: JSX.Element;
+  hideIcon?: boolean;
   children?: ExplorerItem[];
+  render?: (item: ExplorerItem, depth: number) => JSX.Element;
+  onClick?: (e: React.MouseEvent, toggleExpanded: () => void) => void;
 }
 
 export interface ExplorerProviderContext {
@@ -18,11 +23,13 @@ export interface ExplorerProviderContext {
   params: Record<string, string>;
   query: URLSearchParams;
   selection?: { id: string } | null;
+  activeDomainId: string;
 }
 
 export interface ExplorerProvider {
   getTree(ctx: ExplorerProviderContext): Promise<ExplorerItem[]>;
   onSelect?(nodeId: string): void | Promise<void>;
+  subscribe?: (callback: () => void) => () => void;
 }
 
 export interface TabSpec {
@@ -51,6 +58,7 @@ export interface RouteSpec {
 export interface DomainLifecycle {
   onActivate?(): void | Promise<void>;
   onDeactivate?(): void | Promise<void>;
+  subscribe?: (callback: () => void) => () => void;
   onNavigate?(ctx: TabsProviderContext): void | Promise<void>;
   dispose?(): void | Promise<void>;
 }
@@ -88,3 +96,30 @@ export class DomainRegistry {
 }
 
 export const domainRegistry = new DomainRegistry();
+
+// Turnarounds Domain
+
+export enum WorkPackageStatus {
+  NOT_STARTED = "Not Started",
+  IN_PROGRESS = "In Progress",
+  COMPLETED = "Completed",
+  ON_HOLD = "On Hold",
+}
+
+export enum Discipline {
+  MECHANICAL = "Mechanical",
+  ELECTRICAL = "Electrical",
+  INSTRUMENTATION = "Instrumentation",
+  CIVIL = "Civil",
+}
+
+export interface WorkPackage {
+  id: string; // UUID
+  title: string;
+  description?: string;
+  status: WorkPackageStatus;
+  discipline: Discipline;
+  start_date?: string; // Date
+  end_date?: string; // Date
+}
+

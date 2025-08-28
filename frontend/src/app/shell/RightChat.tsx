@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type React from "react";
-import { getChatConfig, type ChatConfig, createChatSession, listMessages, postMessage as apiPostMessage, listChatSessions, type ChatSession as ApiSession } from "@/app/api/chat";
+import { getChatConfig, type ChatConfig, createChatSession, listMessages, postMessage as apiPostMessage, listChatSessions, type ChatSession as ApiSession, deleteChatSession } from "@/app/api/chat";
 
 type Msg = { role: "user" | "assistant"; text: string; at: number };
 type Turn = { topic: string; user: Msg; replies: Msg[] };
@@ -190,22 +190,8 @@ export default function RightChat({ domainId }: { domainId?: string }) {
   }
 
   function defaultNextActions(): string[] {
-    return [
-      "Expand further on task generation",
-      "Create table of tasks",
-      "Not sure – give more context or simpler explanation",
-      "Give requirements for review",
-    ];
-  }
-
-  function buildAssistantStubResponse(userText: string): string {
-    // Example structured feedback with one grouping level using markdown-like sections
-    // Do not echo back the user's request.
-    return [
-      `## Suggestions`,
-      `- We can break this into tasks and estimates`,
-      `- Identify any constraints or unknowns`,
-    ].join("\n");
+    // No default actions for now
+    return [];
   }
 
   // no timestamp rendering per design
@@ -417,7 +403,7 @@ export default function RightChat({ domainId }: { domainId?: string }) {
                 onClick={async () => {
                   // Validate required fields
                   const missing = (chatConfig?.new_chat_fields ?? []).filter(f => f.required && !String((newChatForm as any)[f.key] ?? "").trim());
-                  if (missing.length) return; // TODO: show inline validation
+                  if (missing.length) return;
                   try {
                     if (!domainId) return; // safety: require domain
                     const titleCandidate = (newChatForm as any).topic || (newChatForm as any).project || (newChatForm as any).title || "";
@@ -498,17 +484,53 @@ export default function RightChat({ domainId }: { domainId?: string }) {
                   <div className="px-3 py-2 text-[11px] text-gray-500">No sessions yet.</div>
                 )}
                 {sessions.map(s => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 flex items-center justify-between"
-                    onClick={() => openSession(s)}
-                  >
-                    <span className="truncate mr-2">
-                      {(!s.title || ["chat", "my first chat"].includes(String(s.title).toLowerCase())) ? "Untitled" : s.title}
-                    </span>
-                    <span className="text-[10px] text-gray-400">#{s.id}</span>
-                  </button>
+                  <div key={s.id} className="flex items-center">
+                    <button
+                      type="button"
+                      className="flex-1 text-left px-3 py-2 text-xs hover:bg-gray-50 flex items-center justify-between"
+                      onClick={() => openSession(s)}
+                    >
+                      <span className="truncate mr-2">
+                        {(!s.title || ["chat", "my first chat"].includes(String(s.title).toLowerCase())) ? "Untitled" : s.title}
+                      </span>
+                      <span className="text-[10px] text-gray-400">#{s.id}</span>
+                    </button>
+                                        <button
+                      type="button"
+                      aria-label="Delete chat"
+                      className="relative group px-2 py-2 text-gray-500 hover:text-red-600"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const ok = window.confirm("Delete this chat? This cannot be undone.");
+                        if (!ok) return;
+                        try {
+                          // Optimistic remove
+                          setSessions(prev => prev.filter(x => x.id !== s.id));
+                          await deleteChatSession(s.id);
+                          if (domainId) {
+                            const data = await listChatSessions(domainId);
+                            setSessions(data);
+                          }
+                        } catch (err) {
+                          console.error("Failed to delete chat session", err);
+                          alert("Failed to delete chat. Please try again.");
+                          // In case of failure, re-fetch to restore state
+                          if (domainId) {
+                            try { const data = await listChatSessions(domainId); setSessions(data); } catch {}
+                          }
+                        }
+                      }}
+                    >
+                      {/* Trash icon */}
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                        <path d="M6 7a1 1 0 011 1v7a1 1 0 11-2 0V8a1 1 0 011-1zm4 0a1 1 0 011 1v7a1 1 0 11-2 0V8a1 1 0 011-1zm4 0a1 1 0 011 1v7a1 1 0 11-2 0V8a1 1 0 011-1z" />
+                                                <path fillRule="evenodd" d="M4 5a1 1 0 011-1h3a1 1 0 011-1h2a1 1 0 011 1h3a1 1 0 110 2h-1v10a2 2 0 01-2 2H7a2 2 0 01-2-2V6H4a1 1 0 110-2zm3 1v10h6V6H7z" clipRule="evenodd" />
+                      </svg>
+                      <span className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-2 rounded-md bg-black/75 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 whitespace-nowrap">
+                        Delete chat
+                      </span>
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
@@ -588,9 +610,12 @@ export default function RightChat({ domainId }: { domainId?: string }) {
       {attachments.length > 0 && (
         <div className="px-2 pt-2 flex flex-wrap gap-1 border-t border-border-subtle bg-white">
           {attachments.slice(0, 5).map((f, i) => (
-            <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neutral-100 text-[11px] text-neutral-700 border border-neutral-200" title={f.name}>
+                        <span key={i} className="relative group inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neutral-100 text-[11px] text-neutral-700 border border-neutral-200">
               <svg viewBox="0 0 20 20" className="w-3 h-3" fill="currentColor"><path d="M8 4a3 3 0 00-3 3v6a4 4 0 008 0V8a2 2 0 10-4 0v5a1 1 0 102 0V8h2v5a3 3 0 11-6 0V7a4 4 0 118 0v6h1V7a5 5 0 10-10 0v6a5 5 0 0010 0V8h-1v5a4 4 0 11-8 0V7a3 3 0 016 0v6a2 2 0 11-4 0V8h1v5a1 1 0 102 0V7a3 3 0 10-6 0v6a4 4 0 108 0V7h1v6a5 5 0 11-10 0V7a6 6 0 1112 0v6a6 6 0 11-12 0V7a7 7 0 1114 0v6a7 7 0 11-14 0V7A8 8 0 0116 7v6a8 8 0 11-16 0V7A9 9 0 1117 7v6a9 9 0 11-18 0V7A10 10 0 1118 7v6a10 10 0 11-20 0V7A11 11 0 1119 7v6a11 11 0 11-22 0V7A12 12 0 1120 7v6a12 12 0 11-24 0"/></svg>
-              <span className="truncate max-w-[120px]">{f.name}</span>
+                            <span className="truncate max-w-[120px]">{f.name}</span>
+              <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 rounded-md bg-black/75 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 whitespace-nowrap">
+                {f.name}
+              </span>
             </span>
           ))}
           {attachments.length > 5 && (
@@ -620,15 +645,17 @@ export default function RightChat({ domainId }: { domainId?: string }) {
             if (fileInputRef.current) fileInputRef.current.value = "";
           }}
         />
-        <button
+                <button
           type="button"
-          className="p-2 rounded-lg border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Add files/photos"
+          className="relative group p-2 rounded-lg border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Add files/photos"
           onClick={() => fileInputRef.current?.click()}
           disabled={showHistory || !activeChatMeta}
         >
-          <svg viewBox="0 0 20 20" className="w-4 h-4" fill="currentColor"><path d="M10 4a1 1 0 011 1v4h4a1 1 0 110 2h-4v4a1 1 0 11-2 0v-4H5a1 1 0 110-2h4V5a1 1 0 011-1z"/></svg>
+                    <svg viewBox="0 0 20 20" className="w-4 h-4" fill="currentColor"><path d="M10 4a1 1 0 011 1v4h4a1 1 0 110 2h-4v4a1 1 0 11-2 0v-4H5a1 1 0 110-2h4V5a1 1 0 011-1z"/></svg>
+          <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 rounded-md bg-black/75 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 whitespace-nowrap">
+            Add files/photos
+          </span>
         </button>
         <textarea
           ref={inputRef}

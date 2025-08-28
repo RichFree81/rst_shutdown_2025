@@ -86,11 +86,11 @@ $maxWait = 30
 $ready = $false
 for ($i=0; $i -lt $maxWait; $i++) {
   try {
-    $resp = Invoke-WebRequest -UseBasicParsing -Uri "http://$ApiHost:$Port/docs" -Method GET -TimeoutSec 2
+    $resp = Invoke-WebRequest -UseBasicParsing -Uri "http://$($ApiHost):$($Port)/docs" -Method GET -TimeoutSec 2
     if ($resp.StatusCode -ge 200) { $ready = $true; break }
   } catch { Start-Sleep -Seconds 1 }
 }
-if (-not $ready) { throw "Backend did not become ready on http://$ApiHost:$Port within $maxWait seconds." }
+if (-not $ready) { throw "Backend did not become ready on http://$($ApiHost):$($Port) within $maxWait seconds." }
 Write-Subtle "  - API is ready"
 
 # 7) Run QA

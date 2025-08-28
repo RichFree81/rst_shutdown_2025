@@ -35,7 +35,7 @@ jobs:
         run: |
           echo "APP_ENV=ci" >> .env
           echo "DATABASE_URL=sqlite:///../.data/app_data.db" >> .env
-          echo "JWT_SECRET=dummy_ci_secret_change_me" >> .env
+          echo "JWT_SECRET=ci_secret_do_not_use_in_prod" >> .env
           echo "JWT_ALGORITHM=HS256" >> .env
           echo "JWT_EXPIRES_MIN=60" >> .env
           echo "ADMIN_EMAIL=ci@example.com" >> .env
@@ -46,12 +46,16 @@ jobs:
         run: |
           python -m alembic -c alembic.ini upgrade head
 
+      - name: Run tests
+        run: |
+          pytest --cov=app --cov-report=xml
+
       - name: Lint (ruff)
         run: |
           pip install ruff
-          ruff check app || true
+          ruff check app
 
       - name: Format check (black)
         run: |
           pip install black
-          black --check app || true
+          black --check app

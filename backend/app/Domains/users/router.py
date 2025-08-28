@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -14,7 +14,7 @@ from .schemas import (
 )
 from app.Domains.users.models import User
 
-router = APIRouter(prefix="/api/v1", tags=["auth", "users"])
+router = APIRouter(tags=["auth", "users"])
 
 @router.post("/auth/login", response_model=Token)
 async def login(payload: LoginRequest, db: Session = Depends(get_db)):

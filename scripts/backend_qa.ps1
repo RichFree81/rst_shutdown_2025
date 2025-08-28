@@ -39,9 +39,11 @@ if ($missing.Count -gt 0) { throw "Missing required env vars in ${EnvFile}: $($m
 Write-Step "[2/6] Ensuring Alembic can run" 
 Assert-FileExists (Join-Path $BackendDir "alembic.ini")
 
-# Prefer project venv Python if present
+# Prefer root venv Python using absolute path (repo root = parent of scripts/)
+$RepoRoot = Split-Path -Parent $PSScriptRoot
+$VenvPython = Join-Path $RepoRoot ".venv\Scripts\python.exe"
 $PythonExe = "python"
-if (Test-Path ".venv/Scripts/python.exe") { $PythonExe = ".venv/Scripts/python.exe" }
+if (Test-Path $VenvPython) { $PythonExe = $VenvPython }
 
 Push-Location $BackendDir
 try {

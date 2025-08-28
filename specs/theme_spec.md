@@ -97,7 +97,11 @@ All new modules inherit these styles to ensure a unified look and feel.
 - Header: dark navy background (`bg-brand-navy-700`) with a subtle copper bottom border (`border-brand-copper-300`).  
 - Left ribbon: flat neutral grey (`bg-neutral-200`), no blur; active icon shows a copper left border only on the truly active item.  
 - Context header tabs: flat band (white) with copper underline on the active tab only; no tab background fills or shadows.  
-- Explorer: flat list; hover is a very light blue-grey (`bg-brand-bluegrey-50`); selection indicated by a copper left border on the active leaf only.  
+- Explorer: flat list; hover is a very light blue-grey (`bg-brand-bluegrey-50`); selection indicated by a copper left border on the active leaf only.
+
+- **Explorer Tree (Two-Level Standard):** To ensure consistency, all two-level trees (e.g., a root category with a list of items) must follow this standard:
+  - **Root Item:** Displays an icon and uses standard root-level padding (`pl-2`).
+  - **Child Items:** Do not display icons (`hideIcon: true`). Their text must align vertically with the parent's icon. This is achieved by applying a specific left padding (`pl-8`) to the child items.  
 
 ### Footer
 - Neutral grey text, centered.  

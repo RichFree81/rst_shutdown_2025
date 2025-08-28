@@ -76,3 +76,9 @@ export async function postMessage(sessionId: number, content: string): Promise<C
     body: JSON.stringify({ content }),
   });
 }
+
+export async function deleteChatSession(sessionId: number): Promise<void> {
+  await apiFetch(`/api/v1/chat/sessions/${sessionId}`, {
+    method: "DELETE",
+  });
+}

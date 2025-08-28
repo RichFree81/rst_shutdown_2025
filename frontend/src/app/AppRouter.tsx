@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import { lazy } from "react";
 import { useAuth } from "./providers/AuthProvider";
 import AppShell from "./AppShell";
@@ -6,12 +6,6 @@ import ProtectedRoute from "./ProtectedRoute";
 import DomainOutlet from "./shell/DomainOutlet";
 import "./shell/domains";
 
-function Home() {
-  const { user } = useAuth();
-  return (
-    <div />
-  );
-}
 const SignIn = lazy(() => import("../domains/auth/pages/SignIn"));
 const AcceptInvite = lazy(() => import("../domains/auth/pages/AcceptInvite"));
 const RequestReset = lazy(() => import("../domains/auth/pages/RequestReset"));
@@ -22,7 +16,7 @@ const router = createBrowserRouter([
   {
     element: <AppShell />,
     children: [
-      { path: "/", element: <ProtectedRoute><Home /></ProtectedRoute> },
+      { path: "/", element: <ProtectedRoute><Navigate to="/d/home" replace /></ProtectedRoute> },
       // New domain route
       { path: "/d/:domainId/*", element: <ProtectedRoute><DomainOutlet /></ProtectedRoute> },
     ],

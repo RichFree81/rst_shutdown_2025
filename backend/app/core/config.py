@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     EMAIL_FROM: str | None = None
 
     # Frontend base URL (for building links in emails)
-    FRONTEND_BASE_URL: str = "http://localhost:5173"
+    FRONTEND_BASE_URL: str = Field("http://localhost:5173", alias="FRONTEND_URL")
 
     # Accept CORS_ALLOW_ORIGINS as either JSON array or comma-separated string
     @field_validator("CORS_ALLOW_ORIGINS", mode="before")

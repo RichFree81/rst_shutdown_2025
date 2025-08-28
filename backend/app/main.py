@@ -6,13 +6,24 @@ from app.health import router as health_router
 from app.api.v1.items import router as items_router  # your example router
 from app.api.v1.chat import router as chat_router
 from app.Domains.users.router import router as users_router
+from app.Domains.turnarounds.router import router as turnarounds_router
 
 app = FastAPI(title="my_cloud_api")
 
 # CORS: allow front-end to call the API in browser (adjust origins as needed)
+# A more permissive CORS policy for development
+# This allows requests from the Vite dev server on different hosts/ports
+# Start with a copy of the origins from settings to avoid modifying the original list
+origins = list(settings.CORS_ALLOW_ORIGINS)
+
+# Add the frontend URL from settings if it's not already in the list
+if settings.FRONTEND_BASE_URL and settings.FRONTEND_BASE_URL not in origins:
+    origins.append(settings.FRONTEND_BASE_URL)
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ALLOW_ORIGINS or ["http://localhost:5173"],  # dev default
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -24,7 +35,8 @@ app.include_router(health_router)
 # Versioned API
 app.include_router(items_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
-app.include_router(users_router)
+app.include_router(users_router, prefix="/api/v1")
+app.include_router(turnarounds_router, prefix="/api/v1/turnarounds", tags=["Turnarounds"])
 
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal

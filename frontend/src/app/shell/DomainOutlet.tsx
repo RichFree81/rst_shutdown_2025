@@ -8,32 +8,40 @@ export default function DomainOutlet() {
   const loc = useLocation();
   const dom = domainRegistry.get(domainId);
 
-  if (!dom) {
-    return <div className="p-3 text-sm text-red-700">Domain not found: {domainId}</div>;
-  }
-
+  
   const subPath = useMemo(() => {
     const prefix = `/d/${domainId}`;
     return loc.pathname.startsWith(prefix) ? loc.pathname.slice(prefix.length) || "/" : "/";
   }, [loc.pathname, domainId]);
 
   const route = useMemo(() => {
+    if (!dom) return null;
     const s = subPath === "" ? "/" : subPath;
-    return dom.routes.find(r => s === r.path) || dom.routes[0];
-  }, [dom.routes, subPath]);
+    // Handle root path matching and default path redirection logic.
+    if (s === "/") {
+      // Only return default route if domain has defaultPath defined
+      if (dom.defaultPath) {
+        const defaultRoute = dom.routes.find(r => r.path === dom.defaultPath) || dom.routes.find(r => r.path === "/") || dom.routes[0];
+        return defaultRoute;
+      }
+      // No defaultPath means no route should render (explorer-only domain)
+      return null;
+    }
+    return dom.routes.find(r => r.path === s) || null;
+  }, [dom, subPath]);
 
   useEffect(() => {
-    if (!route) return;
+    if (!dom) return;
     const s = subPath || "/";
     const isRoot = s === "/";
-    if (isRoot) {
-      const target = dom.defaultPath || dom.routes[0]?.path || "/";
-      if (target !== "/") nav(`/d/${domainId}${target}`, { replace: true });
+    if (isRoot && dom.defaultPath) {
+      const target = dom.defaultPath;
+      if (target !== "/") nav(`/d/${domainId}/${target}`, { replace: true });
     }
     dom.onActivate?.();
     return () => { dom.onDeactivate?.(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [domainId]);
+  }, [domainId, dom]);
 
   const ctx: TabsProviderContext = {
     path: subPath,
@@ -42,11 +50,15 @@ export default function DomainOutlet() {
     selection: undefined,
   };
 
-  if (!route) return <div className="p-3 text-sm">No routes defined for domain.</div>;
-
   return (
     <div>
-      {route.render(ctx)}
+      {!dom ? (
+        <div className="p-3 text-sm text-red-700">Domain not found: {domainId}</div>
+      ) : !route ? (
+        <div className="p-3 text-sm">No routes defined for domain.</div>
+      ) : (
+        route.render(ctx)
+      )}
     </div>
   );
 }

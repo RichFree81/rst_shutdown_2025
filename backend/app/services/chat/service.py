@@ -136,3 +136,17 @@ class ChatService:
         db.commit()
         db.refresh(m)
         return ChatMessageOut(id=m.id, role="assistant", content_json=m.content_json)
+
+    def delete_session(self, db: Session, user_id: Optional[int], session_id: int) -> None:
+        # Verify the session exists and belongs to the user (if user_id provided)
+        s = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+        if not s:
+            raise ValueError("not_found")
+        # Allow deletion if the session has no owner (legacy/unowned). Enforce ownership otherwise.
+        if user_id is not None and s.user_id is not None and s.user_id != user_id:
+            raise PermissionError("forbidden")
+        # Delete child messages first to be safe across DBs
+        db.query(ChatMessage).filter(ChatMessage.session_id == session_id).delete()
+        # Then delete the session
+        db.delete(s)
+        db.commit()

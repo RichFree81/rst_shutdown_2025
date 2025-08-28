@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -70,5 +70,18 @@ def post_message(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
     # Append user message
     user_msg = service.append_user_message(db, session_id, payload.content)
-    # TODO: LLM call -> validate -> append assistant
     return user_msg
+
+@router.delete("/chat/sessions/{session_id}", status_code=204)
+def delete_session(
+    session_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        service.delete_session(db, current_user.id, session_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+    except PermissionError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    return Response(status_code=204)
