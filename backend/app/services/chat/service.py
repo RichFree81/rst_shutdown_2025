@@ -131,7 +131,7 @@ class ChatService:
         return ChatMessageOut(id=m.id, role="user", content_text=m.content_text)
 
     def append_assistant_message(self, db: Session, session_id: int, payload: ChatAssistantMessage) -> ChatMessageOut:
-        m = ChatMessage(session_id=session_id, role="assistant", content_json=payload.dict())
+        m = ChatMessage(session_id=session_id, role="assistant", content_json=payload.model_dump())
         db.add(m)
         db.commit()
         db.refresh(m)

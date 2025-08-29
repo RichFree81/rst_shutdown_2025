@@ -31,7 +31,11 @@ export default function AppShell() {
   }, [effectiveDomainId]);
 
   useEffect(() => {
-    // Reset selection when domain changes
+    // Reset selection when domain changes, but allow auto-selection to override
+    if (effectiveDomainId === 'turnarounds') {
+      // Don't reset for turnarounds - let onActivate handle selection
+      return;
+    }
     setSelectedTitle(null);
   }, [effectiveDomainId]);
 
@@ -61,6 +65,21 @@ export default function AppShell() {
       document.removeEventListener("keydown", onKey as any);
     };
   }, [menuOpen]);
+
+  // Listen for domain explorer auto-selection
+  useEffect(() => {
+    const handleDomainSelect = (e: CustomEvent) => {
+      const { title } = e.detail;
+      console.log('Received domain-select-explorer event:', title);
+      // Only set selectedTitle for explorer-only content, not route-based content
+      if (title !== 'Dashboards') {
+        setSelectedTitle(title);
+      }
+    };
+    
+    window.addEventListener('domain-select-explorer', handleDomainSelect as EventListener);
+    return () => window.removeEventListener('domain-select-explorer', handleDomainSelect as EventListener);
+  }, []);
 
   // Auto-hide scrollbar: toggle 'scrolling' class during scroll
   useEffect(() => {
@@ -139,7 +158,15 @@ export default function AppShell() {
           <aside className={`${explorerOpen ? "block" : "hidden"} fixed left-12 top-12 z-10 h-[calc(100vh-48px)] w-56 border-r border-border-subtle bg-white overflow-visible [contain:content]`}> 
             <ExplorerPane
               domainId={effectiveDomainId}
-              onSelect={(id, label) => setSelectedTitle(label)}
+              onSelect={(id, label) => {
+                // Only set selectedTitle for explorer-only content.
+                // Explicitly clear when navigating to route-based content like Dashboards.
+                if (label === 'Dashboards') {
+                  setSelectedTitle(null);
+                } else {
+                  setSelectedTitle(label);
+                }
+              }}
             />
           </aside>
           {/* Explorer tab (fixed, vertically centered short tab with arrow) */}
@@ -161,10 +188,11 @@ export default function AppShell() {
 
           {/* Context area: tabs fixed at top, inner content scrolls */}
           <div className={`flex-1 min-w-0 flex flex-col bg-bg-canvas ml-6 mr-6`}>
-            {selectedTitle && selectedTitle !== 'Getting Started' && <ContextHeaderTabs title={selectedTitle} />}
-            <div ref={contextRef} className="relative auto-hide-scroll flex-1 overflow-y-scroll overscroll-contain [contain:content] p-4">
+            {selectedTitle && selectedTitle !== 'Getting Started' && selectedTitle !== 'Dashboards' && <ContextHeaderTabs title={selectedTitle} />}
+            <div ref={contextRef} className="relative auto-hide-scroll flex-1 overflow-y-scroll overscroll-contain [contain:content]">
               {selectedTitle ? (
-                <div>
+                <div className="p-4">
+                  {(() => { console.log('AppShell: selectedTitle is', selectedTitle); return null; })()}
                   {/* Explorer-only content for Getting Started */}
                   {effectiveDomainId === 'turnarounds' && selectedTitle === 'Getting Started' && (
                     <div>
@@ -186,39 +214,39 @@ export default function AppShell() {
                         </section>
 
                         <section>
-                          <h2 className="text-xl font-semibold text-brand-navy mb-3">What This Domain Addresses</h2>
+                          <h2 className="text-xl font-semibold text-brand-navy mb-3">Key Features</h2>
                           <div className="grid md:grid-cols-2 gap-4">
-                            <div className="bg-white border border-brand-bluegrey-200 rounded-lg p-4">
+                            <div className="bg-white p-4 rounded-lg border border-border-subtle">
                               <h3 className="font-medium text-brand-navy mb-2">Work Package Management</h3>
                               <p className="text-sm text-text-secondary">
-                                Organize and track maintenance tasks, inspections, and equipment installations across your turnaround project.
+                                Organize and track maintenance activities, inspections, and equipment upgrades with detailed work packages.
                               </p>
                             </div>
-                            <div className="bg-white border border-brand-bluegrey-200 rounded-lg p-4">
-                              <h3 className="font-medium text-brand-navy mb-2">Resource Planning</h3>
+                            <div className="bg-white p-4 rounded-lg border border-border-subtle">
+                              <h3 className="font-medium text-brand-navy mb-2">Real-time Dashboards</h3>
                               <p className="text-sm text-text-secondary">
-                                Coordinate personnel, equipment, and materials to ensure efficient execution and minimize downtime.
+                                Monitor progress, resource allocation, and key performance indicators throughout the turnaround.
                               </p>
                             </div>
-                            <div className="bg-white border border-brand-bluegrey-200 rounded-lg p-4">
-                              <h3 className="font-medium text-brand-navy mb-2">Safety & Compliance</h3>
+                            <div className="bg-white p-4 rounded-lg border border-border-subtle">
+                              <h3 className="font-medium text-brand-navy mb-2">Safety Compliance</h3>
                               <p className="text-sm text-text-secondary">
-                                Maintain safety standards and regulatory compliance throughout all turnaround activities.
+                                Ensure all activities meet safety standards and regulatory requirements with built-in compliance tracking.
                               </p>
                             </div>
-                            <div className="bg-white border border-brand-bluegrey-200 rounded-lg p-4">
-                              <h3 className="font-medium text-brand-navy mb-2">Progress Tracking</h3>
+                            <div className="bg-white p-4 rounded-lg border border-border-subtle">
+                              <h3 className="font-medium text-brand-navy mb-2">Resource Optimization</h3>
                               <p className="text-sm text-text-secondary">
-                                Monitor real-time progress, identify bottlenecks, and make data-driven decisions to stay on schedule.
+                                Efficiently allocate personnel, equipment, and materials to minimize downtime and costs.
                               </p>
                             </div>
                           </div>
                         </section>
 
-                        <section className="bg-brand-copper-50 border border-brand-copper-200 rounded-lg p-4">
+                        <section>
                           <h2 className="text-xl font-semibold text-brand-navy mb-3">Getting Started</h2>
-                          <p className="text-text-primary mb-3">
-                            Begin by exploring the navigation tree on the left to access different areas of turnaround management:
+                          <p className="text-text-primary leading-relaxed mb-4">
+                            Begin by exploring the different sections of the turnarounds management system:
                           </p>
                           <ul className="list-disc list-inside space-y-1 text-text-secondary">
                             <li>Browse work packages to see planned maintenance activities</li>
@@ -231,8 +259,8 @@ export default function AppShell() {
                     </div>
                   )}
                   
-                  {/* Placeholder content for other explorer selections */}
-                  {selectedTitle !== 'Getting Started' && (
+                  {/* Placeholder content for other explorer selections - but NOT for Dashboards */}
+                  {selectedTitle !== 'Getting Started' && selectedTitle !== 'Dashboards' && (
                     <div className="p-8 text-center text-text-secondary">
                       <h2 className="text-xl font-medium mb-2">{selectedTitle}</h2>
                       <p>Content for this section is coming soon.</p>
@@ -240,7 +268,10 @@ export default function AppShell() {
                   )}
                 </div>
               ) : (
-                <Outlet />
+                <>
+                  {console.log('AppShell: Rendering Outlet for route-based content')}
+                  <Outlet />
+                </>
               )}
             </div>
           </div>

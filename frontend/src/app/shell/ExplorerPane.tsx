@@ -133,6 +133,7 @@ export default function ExplorerPane({ domainId, onSelect }: { domainId: string;
             } else {
               setSelectedId(item.id);
               if (item.path) {
+                console.log('ExplorerPane: Navigating to path:', item.path);
                 navigate(item.path);
                 onSelect(item.id, typeof item.label === "string" ? item.label : null);
               } else {
