@@ -1,0 +1,42 @@
+Git Cheat Sheet
+
+1. git checkout -b <branch>
+   Create and switch to a new branch.
+
+2. git status
+   Show current branch, staged changes, unstaged changes, and untracked files.
+
+3. git add .
+   Stage all modified and new files for the next commit.
+
+4. git commit -am "message"
+   Commit staged changes with a message. The -a flag stages tracked file changes automatically.
+
+5. git push
+   Upload local branch commits to the remote repository.
+
+6. git reset --hard
+   Reset working directory and index to the last commit. All local changes are discarded.
+
+7. git merge <branch>
+   Merge commits from the specified branch into the current branch.
+   
+   
+   
+   
+Git Workflows
+
+1. Creating a new branch
+   git checkout -b feature-branch
+
+2. Committing code changes
+   git status
+   git add .
+   git commit -am "describe changes"
+   git push
+
+3. Returning to main and merging changes
+   git checkout main
+   git pull
+   git merge feature-branch
+   git push   
