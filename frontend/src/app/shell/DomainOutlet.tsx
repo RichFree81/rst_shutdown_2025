@@ -22,17 +22,29 @@ export default function DomainOutlet() {
     const s = subPath === "" ? "/" : subPath;
     // Handle root path matching and default path redirection logic.
     if (s === "/") {
-      // Only return default route if domain has defaultPath defined
       if (dom.defaultPath) {
         const defaultRoute = dom.routes.find(r => r.path === dom.defaultPath) || dom.routes.find(r => r.path === "/") || dom.routes[0];
         return defaultRoute;
       }
-      // No defaultPath means no route should render (explorer-only domain)
       return null;
     }
-    // Normalize leading slash in subPath for route matching
+    // Normalize leading slash
     const key = s.startsWith("/") ? s.slice(1) : s;
-    return dom.routes.find(r => r.path === key) || null;
+    const keySegs = key.split("/");
+    // Match route either by exact string or by param segments beginning with ':'
+    const matched = dom.routes.find(r => {
+      const rp = r.path.replace(/^\/+/, "");
+      if (rp === key) return true;
+      const rSegs = rp.split("/");
+      if (rSegs.length !== keySegs.length) return false;
+      for (let i = 0; i < rSegs.length; i++) {
+        const seg = rSegs[i];
+        if (seg.startsWith(":")) continue; // param match
+        if (seg !== keySegs[i]) return false;
+      }
+      return true;
+    });
+    return matched || null;
   }, [dom, subPath]);
 
   useEffect(() => {

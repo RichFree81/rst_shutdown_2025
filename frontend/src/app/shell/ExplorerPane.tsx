@@ -135,7 +135,8 @@ export default function ExplorerPane({ domainId, onSelect }: { domainId: string;
               if (item.path) {
                 console.log('ExplorerPane: Navigating to path:', item.path);
                 navigate(item.path);
-                onSelect(item.id, typeof item.label === "string" ? item.label : null);
+                // Clear explorer-only selection for route-based pages
+                onSelect(null, null);
               } else {
                 onSelect(item.id, typeof item.label === "string" ? item.label : null);
               }
