@@ -7,6 +7,7 @@ import type { DomainDefinition, ExplorerItem, ExplorerProvider, TabSpec, TabsPro
 const DashboardsPage = lazy(() => import("./pages/DashboardsPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+const CostPage = lazy(() => import("./pages/CostPage"));
 
 const TurnaroundsIcon = {
   title: "Turnarounds",
@@ -645,8 +646,7 @@ const TurnaroundsDomain: DomainDefinition = {
           // Same tabs for each work package
           return [
             { key: "overview", label: "Overview" },
-            { key: "details", label: "Details" },
-            { key: "activity", label: "Activity" },
+            { key: "cost", label: "Cost" },
           ];
         },
         renderTabContent(tabKey: string, ctx: TabsProviderContext): JSX.Element {
@@ -660,34 +660,8 @@ const TurnaroundsDomain: DomainDefinition = {
           if (tabKey === "overview") {
             return <WorkPackageOverview data={data} />;
           }
-          if (tabKey === "details") {
-            return (
-              <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded-lg border border-border-subtle">
-                  <div className="text-sm text-text-secondary">Overall Status</div>
-                  <div className="font-medium">{data.overall_status}</div>
-                </div>
-                <div className="bg-white p-4 rounded-lg border border-border-subtle">
-                  <div className="text-sm text-text-secondary">Discipline</div>
-                  <div className="font-medium">{data.discipline}</div>
-                </div>
-                <div className="bg-white p-4 rounded-lg border border-border-subtle">
-                  <div className="text-sm text-text-secondary">Start Date</div>
-                  <div className="font-medium">{data.start_date || "—"}</div>
-                </div>
-                <div className="bg-white p-4 rounded-lg border border-border-subtle">
-                  <div className="text-sm text-text-secondary">End Date</div>
-                  <div className="font-medium">{data.end_date || "—"}</div>
-                </div>
-              </div>
-            );
-          }
-          if (tabKey === "activity") {
-            return (
-              <div className="p-8 text-center text-text-secondary">
-                <p>Activity log will appear here for {data.title}.</p>
-              </div>
-            );
+          if (tabKey === "cost") {
+            return <CostPage wpId={wpId} data={data} />;
           }
           return <div className="p-4">Unknown tab</div>;
         },
